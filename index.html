@@ -1,1 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SNR Trading Journal</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#070b11;color:#fff;font-family:Arial,sans-serif}
+.app{max-width:900px;margin:auto;padding:16px}
+h1{margin:5px 0 16px;font-size:25px}
+.green{color:#55e6a5}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.card{background:#101722;border:1px solid #263447;border-radius:14px;padding:14px;margin-bottom:12px}
+.card small{color:#8997aa}
+.stat{font-size:23px;font-weight:bold;margin-top:6px}
+.tabs{display:flex;gap:8px;margin:15px 0;overflow:auto}
+button{border:1px solid #29384c;background:#172131;color:#fff;border-radius:9px;padding:11px 15px}
+button.active,.save{background:#55e6a5;color:#06100b;font-weight:bold}
+section{display:none}
+section.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{font-size:12px;color:#91a0b3}
+input,select,textarea{width:100%;margin-top:5px;padding:11px;background:#080d14;color:#fff;border:1px solid #29384c;border-radius:8px}
+textarea{min-height:90px}
+.full{grid-column:1/-1}
+table{width:100%;border-collapse:collapse}
+th,td{padding:9px 5px;border-bottom:1px solid #273345;font-size:12px;text-align:left}
+.scroll{overflow:auto}
+.win{color:#55e6a5}.loss{color:#ff6578}
+.bar{height:10px;background:#202b3b;border-radius:20px;overflow:hidden}
+.bar span{display:block;height:100%;width:0;background:#55e6a5;transition:width .8s}
+.empty{text-align:center;color:#7e8da1;padding:25px}
+@media(max-width:600px){
+.stats{grid-template-columns:1fr 1fr}
+form{grid-template-columns:1fr}
+.full{grid-column:auto}
+}
+</style>
+</head>
 
+<body>
+<div class="app">
+
+<h1>SNR <span class="green">TRADING JOURNAL</span></h1>
+
+<div class="stats">
+<div class="card"><small>TRADES</small><div class="stat" id="trades">0</div></div>
+<div class="card"><small>WIN RATE</small><div class="stat" id="wr">0%</div></div>
+<div class="card"><small>NET P/L</small><div class="stat" id="pl">$0</div></div>
+<div class="card"><small>AVG RR</small><div class="stat" id="avgrr">0</div></div>
+</div>
+
+<div class="tabs">
+<button class="active" onclick="show('dashboard',this)">Dashboard</button>
+<button onclick="show('entry',this)">＋ Entry</button>
+<button onclick="show('log',this)">Trade Log</button>
+</div>
+
+<section id="dashboard" class="active">
+
+<div class="card">
+<h3>Performance</h3>
+<p>Win Rate</p>
+<div class="bar"><span id="bar"></span></div>
+<p id="summary">Belum ada trade.</p>
+</div>
+
+<div class="card">
+<h3>Rules</h3>
+<p>✓ Tunggu setup</p>
+<p>✓ Tunggu confirmation LTF</p>
+<p>✓ Risk sudah ditentukan sebelum entry</p>
+<p>✓ Jangan revenge trade</p>
+</div>
+
+</section>
+
+<section id="entry">
+
+<div class="card">
+<h2>Catat Trade</h2>
+
+<form id="form">
+
+<div>
+<label>Tanggal</label>
+<input id="date" type="date" required>
+</div>
+
+<div>
+<label>Pair</label>
+<input id="pair" value="XAUUSD">
+</div>
+
+<div>
+<label>Direction</label>
+<select id="direction">
+<option>BUY</option>
+<option>SELL</option>
+</select>
+</div>
+
+<div>
+<label>Session</label>
+<select id="session">
+<option>London</option>
+<option>New York</option>
+<option>Asia</option>
+</select>
+</div>
+
+<div>
+<label>Setup</label>
+<select id="setup">
+<option>SNR</option>
+<option>Supply</option>
+<option>Demand</option>
+<option>FVG</option>
+<option>Order Block</option>
+<option>Liquidity</option>
+</select>
+</div>
+
+<div>
+<label>Structure</label>
+<select id="structure">
+<option>MSS</option>
+<option>BOS</option>
+<option>CHoCH</option>
+<option>CISD</option>
+<option>None</option>
+</select>
+</div>
+
+<div>
+<label>Result</label>
+<select id="result">
+<option>WIN</option>
+<option>LOSS</option>
+<option>BE</option>
+</select>
+</div>
+
+<div>
+<label>P/L ($)</label>
+<input id="money" type="number" step="0.01" placeholder="contoh 25">
+</div>
+
+<div>
+<label>RR</label>
+<input id="rr" type="number" step="0.1" placeholder="contoh 2">
+</div>
+
+<div>
+<label>Execution /10</label>
+<input id="score" type="number" min="1" max="10" value="10">
+</div>
+
+<div class="full">
+<label>Alasan Entry</label>
+<textarea id="reason" placeholder="Liquidity → MSS → displacement → POI → confirmation"></textarea>
+</div>
+
+<div class="full">
+<label>Kesalahan / Catatan</label>
+<textarea id="note" placeholder="FOMO? Early entry? Perfect execution?"></textarea>
+</div>
+
+<div class="full">
+<button class="save" type="submit">SAVE TRADE</button>
+</div>
+
+</form>
+</div>
+
+</section>
+
+<section id="log">
+
+<div class="card">
+<h2>Trade Log</h2>
+
+<div class="scroll">
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Pair</th>
+<th>Dir</th>
+<th>Setup</th>
+<th>Result</th>
+<th>P/L</th>
+<th>RR</th>
+</tr>
+</thead>
+
+<tbody id="rows"></tbody>
+</table>
+</div>
+
+</div>
+
+</section>
+
+</div>
+
+<script>
+
+let data=JSON.parse(localStorage.getItem("SNR_JOURNAL")||"[]");
+
+document.getElementById("date").value=new Date().toISOString().slice(0,10);
+
+function show(id,btn){
+document.querySelectorAll("section").forEach(x=>x.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));
+btn.classList.add("active");
+}
+
+document.getElementById("form").addEventListener("submit",function(e){
+
+e.preventDefault();
+
+data.push({
+date:date.value,
+pair:pair.value,
+direction:direction.value,
+session:session.value,
+setup:setup.value,
+structure:structure.value,
+result:result.value,
+money:Number(money.value)||0,
+rr:Number(rr.value)||0,
+score:Number(score.value)||0,
+reason:reason.value,
+note:note.value
+});
+
+localStorage.setItem("SNR_JOURNAL",JSON.stringify(data));
+
+this.reset();
+
+pair.value="XAUUSD";
+score.value=10;
+date.value=new Date().toISOString().slice(0,10);
+
+update();
+
+alert("Trade berhasil disimpan 🔥");
+
+});
+
+function update(){
+
+let total=data.length;
+let wins=data.filter(x=>x.result==="WIN").length;
+let closed=data.filter(x=>x.result==="WIN"||x.result==="LOSS").length;
+
+let winrate=closed?(wins/closed)*100:0;
+
+let net=data.reduce((a,x)=>a+x.money,0);
+
+let avg=data.length?
+data.reduce((a,x)=>a+x.rr,0)/data.length:0;
+
+document.getElementById("trades").textContent=total;
+document.getElementById("wr").textContent=winrate.toFixed(1)+"%";
+document.getElementById("pl").textContent=(net>=0?"+":"")+"$"+net.toFixed(2);
+document.getElementById("avgrr").textContent=avg.toFixed(2);
+
+document.getElementById("bar").style.width=winrate+"%";
+
+document.getElementById("summary").textContent=
+total?
+wins+" WIN dari "+closed+" trade closed."
+:"Belum ada trade.";
+
+let rows=document.getElementById("rows");
+
+rows.innerHTML=data.length?
+data.slice().reverse().map(x=>`
+<tr>
+<td>${x.date}</td>
+<td>${x.pair}</td>
+<td>${x.direction}</td>
+<td>${x.setup}</td>
+<td class="${x.result==="WIN"?"win":x.result==="LOSS"?"loss":""}">${x.result}</td>
+<td class="${x.money>=0?"win":"loss"}">${x.money>=0?"+":""}$${x.money.toFixed(2)}</td>
+<td>${x.rr}</td>
+</tr>
+`).join("")
+:
+`<tr><td colspan="7" class="empty">Belum ada trade.</td></tr>`;
+}
+
+update();
+
+</script>
+
+</body>
+</html>
